@@ -1,0 +1,10 @@
+{
+    "cSpell.words": [
+        "Hackathon",
+        "rarr",
+        "TSMC"
+    ],
+    "files.associations": {
+        "*.css": "tailwindcss"
+    }
+}
