@@ -19,7 +19,7 @@ export default function Page() {
     },
     {
       page_path: "/pages/stress-test",
-      title: "Stress Test",
+      title: "Simulate High-Load Scenarios",
       description:
         "Perform stress tests on your Cloud Run service with customizable concurrent requests.",
     },

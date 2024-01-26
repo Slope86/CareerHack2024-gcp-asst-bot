@@ -2,6 +2,8 @@
 import Head from "next/head";
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/layout";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -9,8 +11,17 @@ export default function ChatBot() {
   const messagesContainerRef = useRef(null);
   const [isWaitingBot, setIsWaitingBot] = useState(false);
 
+  // 新增狀態來保存選擇的文件
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // 文件選擇處理函數
+  const handleFileSelect = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
   const startNewChat = () => {
     setMessages([]);
+    setIsWaitingBot(false);
   };
 
   const scrollToBottom = () => {
@@ -24,7 +35,56 @@ export default function ChatBot() {
     scrollToBottom();
   }, [messages]);
 
+  const analyzeFile = async (e) => {
+    setIsWaitingBot(true);
+    console.log(
+      "sendFile: ",
+      selectedFile.name,
+      "to: ",
+      `${process.env.NEXT_PUBLIC_MAIN_FRAME_URL}/api/send_query`
+    );
+
+    e.preventDefault();
+
+    // Add the user message to the messages array
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { text: input + " (file: " + selectedFile.name + ")", sender: "user" },
+    ]);
+    setInput("");
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_MAIN_FRAME_URL}/api/send_query`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query: input, dataset: true }),
+        }
+      );
+      // Parse the text from the response
+      const botResponseText = await response.text();
+      console.log("botResponse: ", botResponseText);
+      // Add the bot response to the messages array
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: botResponseText, sender: "bot" },
+      ]);
+    } catch (error) {
+      console.error("Error fetching response: ", error);
+    } finally {
+      setIsWaitingBot(false);
+    }
+  };
+
   const sendMessage = async (e) => {
+    if (selectedFile) {
+      analyzeFile(e);
+      return;
+    }
+
     setIsWaitingBot(true);
     console.log(
       "sendMessage: ",
@@ -108,6 +168,32 @@ export default function ChatBot() {
             )}
           </div>
           <form onSubmit={sendMessage}>
+            {/* 文件上傳按鈕，設計為正方形並添加迴紋針圖案 */}
+            <div className="flex items-center">
+              <label
+                htmlFor="file"
+                className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full mr-2 cursor-pointer"
+              >
+                <img
+                  src="/images/paper_clip.png"
+                  alt="Paper Clip"
+                  className="w-6 h-6"
+                />
+                <input
+                  id="file"
+                  type="file"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </label>
+
+              {selectedFile && (
+                <div className="text-sm text-gray-700 mr-2">
+                  Attach: {selectedFile.name}
+                </div>
+              )}
+            </div>
+            <div className="p-0.5"></div>
             <input
               type="text"
               value={input}
@@ -123,6 +209,7 @@ export default function ChatBot() {
               >
                 Submit
               </button>
+
               <button
                 onClick={startNewChat}
                 className="text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5"
