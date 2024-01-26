@@ -31,54 +31,31 @@ export default function StressTest() {
   const [memoryLoadSizeMiB, setMemoryLoadSizeMiB] = useState();
   const [isTesting, setIsTesting] = useState(false);
 
-  const handleLatencyTest = async () => {
-    setIsTesting(true);
-    try {
-      console.log(
-        "start latency test on server",
-        `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/latency-test`
-      );
-      fetch(`${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/latency-test`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ latency: parseInt(latency) }),
-      });
-      console.log("end latency test");
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      await new Promise((resolve) => setTimeout(resolve, requestInterval));
-      setIsTesting(false);
-    }
-  };
-
-  const handleRequestCountTest = async () => {
+  const handleRequestTest = async () => {
     console.log(
-      "start RequestCountTest on server",
-      `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/request-count-test`
+      "Start RequestTest on server",
+      `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/request-test`
     );
     setIsTesting(true);
     try {
       for (let i = 0; i < requestCount; i++) {
         fetch(
-          `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/request-count-test`,
+          `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/request-test`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              requestCount: i,
+              latency: parseInt(latency),
               responseCode: responseCode,
             }),
           }
         );
       }
-      console.log("end RequestCountTest");
+      console.log("End RequestTest");
     } catch (error) {
-      console.error("RequestCountTest Error:", error);
+      console.error("RequestTest Error:", error);
     } finally {
       await new Promise((resolve) => setTimeout(resolve, requestInterval));
       setIsTesting(false);
@@ -139,59 +116,50 @@ export default function StressTest() {
 
   return (
     <Layout>
-      {/* Latency Test */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Requests Latency Simulation Test</CardTitle>
+          <CardTitle>Request Simulation Test</CardTitle>
           <CardDescription>
-            Configure the desired response delay to simulate network latency for
-            requests.
+            Configure the test settings to simulate network latency and set the
+            number of requests.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="latency">Latency (seconds)</Label>
-              <Input
-                id="latency"
-                type="number"
-                value={latency}
-                onChange={(e) => setLatency(e.target.value)}
-                onBlur={(e) =>
-                  setLatency(handleUserInputInt(e.target.value, 0, MAXlatency))
-                }
-                placeholder="Enter latency in seconds"
-              />
-            </div>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <button
-            onClick={handleLatencyTest}
-            disabled={isTesting}
-            style={{ width: "70px" }}
-            className=" bg-blue-500 text-white hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex justify-center items-center"
-          >
-            {isTesting ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-            ) : (
-              "Test"
-            )}
-          </button>
-        </CardFooter>
-      </Card>
-
-      <div className="p-3"></div>
-      {/* Requests Count Test */}
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Requests Count Test</CardTitle>
-          <CardDescription>Set the number of requests to send.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form>
-            <div className="grid w-full items-center gap-4">
-              {/* Request Count */}
+            <div className="grid w-full gap-4">
+              {/* Latency Configuration */}
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="latency">Latency (seconds)</Label>
+                <Input
+                  id="latency"
+                  type="number"
+                  value={latency}
+                  onChange={(e) => setLatency(e.target.value)}
+                  onBlur={(e) =>
+                    setLatency(
+                      handleUserInputInt(e.target.value, 0, MAXlatency)
+                    )
+                  }
+                  placeholder="Enter server response latency in seconds"
+                />
+              </div>
+              {/* Response Code Configuration */}
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="responseCode">Response Code</Label>
+                <Input
+                  id="responseCode"
+                  type="number"
+                  value={responseCode}
+                  onChange={(e) => setResponseCode(e.target.value)}
+                  onBlur={(e) =>
+                    setResponseCode(
+                      handleUserInputInt(e.target.value, 100, 599)
+                    )
+                  }
+                  placeholder="Enter server response code you expect to receive"
+                />
+              </div>
+              {/* Request Count Configuration */}
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="requestCount">Number Of Requests</Label>
                 <Input
@@ -207,31 +175,15 @@ export default function StressTest() {
                   placeholder="Enter number of requests to send"
                 />
               </div>
-              {/* Response Code */}
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="responseCode">Response Code</Label>
-                <Input
-                  id="responseCode"
-                  type="number"
-                  value={responseCode}
-                  onChange={(e) => setResponseCode(e.target.value)}
-                  onBlur={(e) =>
-                    setResponseCode(
-                      handleUserInputInt(e.target.value, 100, 599)
-                    )
-                  }
-                  placeholder="Enter the response code you expect to receive"
-                />
-              </div>
             </div>
           </form>
         </CardContent>
         <CardFooter>
           <button
-            onClick={handleRequestCountTest}
+            onClick={handleRequestTest}
             disabled={isTesting}
+            className="bg-blue-500 text-white hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex justify-center items-center"
             style={{ width: "70px" }}
-            className=" bg-green-500 text-white hover:bg-green-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center flex justify-center items-center"
           >
             {isTesting ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

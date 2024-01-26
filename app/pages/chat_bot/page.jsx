@@ -70,7 +70,7 @@ export default function ChatBot() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ query: "分析過去一天的資料", dataset: true }),
+          body: JSON.stringify({ query: input, dataset: true }),
         }
       );
       // Parse the text from the response
@@ -207,6 +207,12 @@ export default function ChatBot() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isWaitingBot) {
+                  e.preventDefault(); // 阻止 Enter 鍵的默認行為（如換行）
+                  sendMessage();
+                }
+              }}
               placeholder="Type your message here..."
               className="border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition ease-in-out rounded w-full p-2"
             />
