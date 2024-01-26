@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/layout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { set } from "date-fns";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -130,6 +131,13 @@ export default function ChatBot() {
       ]);
     } catch (error) {
       console.error("Error fetching response: ", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          text: "Sorry, the system is currently busy. Please try again in a few moments.",
+          sender: "bot",
+        },
+      ]);
     } finally {
       setIsWaitingBot(false);
     }
