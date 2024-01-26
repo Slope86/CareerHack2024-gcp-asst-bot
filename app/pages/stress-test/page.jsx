@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { handleUserInputInt } from "@/lib/utils";
 
 const MAXlatency = 300;
 const MAXrequestCount = 1000;
@@ -18,13 +19,7 @@ const MAXtestCPUDuration = 300;
 const MAXtestMemoryDuration = 300;
 const MAXcpuLoad = 100;
 const MAXmemoryLoadSizeMiB = 2048;
-
-function handleUserInputInt(value, min = 0, max = 300) {
-  const numericValue = parseInt(value, 10);
-  if (!isNaN(numericValue)) {
-    return Math.min(max, Math.max(min, numericValue));
-  }
-}
+const requestInterval = 1000;
 
 export default function StressTest() {
   const [latency, setLatency] = useState();
@@ -43,22 +38,18 @@ export default function StressTest() {
         "start latency test on server",
         `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/latency-test`
       );
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/latency-test`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ latency: parseInt(latency) }),
-        }
-      );
-      const data = await response.json();
-      console.log(data);
+      fetch(`${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/latency-test`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ latency: parseInt(latency) }),
+      });
       console.log("end latency test");
     } catch (error) {
       console.error("Error:", error);
     } finally {
+      await new Promise((resolve) => setTimeout(resolve, requestInterval));
       setIsTesting(false);
     }
   };
@@ -71,7 +62,7 @@ export default function StressTest() {
     setIsTesting(true);
     try {
       for (let i = 0; i < requestCount; i++) {
-        await fetch(
+        fetch(
           `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/request-count-test`,
           {
             method: "POST",
@@ -89,6 +80,7 @@ export default function StressTest() {
     } catch (error) {
       console.error("RequestCountTest Error:", error);
     } finally {
+      await new Promise((resolve) => setTimeout(resolve, requestInterval));
       setIsTesting(false);
     }
   };
@@ -100,23 +92,21 @@ export default function StressTest() {
     );
     setIsTesting(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/cpu-test`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            duration: parseInt(testCPUDuration),
-            load: parseInt(cpuLoad),
-          }),
-        }
-      );
+      fetch(`${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/cpu-test`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          duration: parseInt(testCPUDuration),
+          load: parseInt(cpuLoad),
+        }),
+      });
       console.log("end CpuTest");
     } catch (error) {
       console.error("CpuTest Error:", error);
     } finally {
+      await new Promise((resolve) => setTimeout(resolve, requestInterval));
       setIsTesting(false);
     }
   };
@@ -128,23 +118,21 @@ export default function StressTest() {
     );
     setIsTesting(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/memory-test`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            duration: parseInt(testMemoryDuration),
-            size_Mi: parseInt(memoryLoadSizeMiB),
-          }),
-        }
-      );
+      fetch(`${process.env.NEXT_PUBLIC_GCP_STRESS_API_URL}/api/memory-test`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          duration: parseInt(testMemoryDuration),
+          size_Mi: parseInt(memoryLoadSizeMiB),
+        }),
+      });
       console.log("end MemoryTest");
     } catch (error) {
       console.error("MemoryTest Error:", error);
     } finally {
+      await new Promise((resolve) => setTimeout(resolve, requestInterval));
       setIsTesting(false);
     }
   };

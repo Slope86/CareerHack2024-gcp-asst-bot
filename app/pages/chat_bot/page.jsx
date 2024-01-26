@@ -2,9 +2,6 @@
 import Head from "next/head";
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/layout";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { set } from "date-fns";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -36,6 +33,17 @@ export default function ChatBot() {
     scrollToBottom();
   }, [messages]);
 
+  const errorResponse = (error) => {
+    console.error("Error fetching response: ", error);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      {
+        text: "Sorry, the system is currently busy. Please try again in a few moments.",
+        sender: "bot",
+      },
+    ]);
+  };
+
   const analyzeFile = async (e) => {
     setIsWaitingBot(true);
     console.log(
@@ -62,7 +70,7 @@ export default function ChatBot() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ query: input, dataset: true }),
+          body: JSON.stringify({ query: "分析過去一天的資料", dataset: true }),
         }
       );
       // Parse the text from the response
@@ -74,7 +82,7 @@ export default function ChatBot() {
         { text: botResponseText, sender: "bot" },
       ]);
     } catch (error) {
-      console.error("Error fetching response: ", error);
+      errorResponse(error);
     } finally {
       setIsWaitingBot(false);
     }
@@ -130,14 +138,7 @@ export default function ChatBot() {
         { text: botResponseText, sender: "bot" },
       ]);
     } catch (error) {
-      console.error("Error fetching response: ", error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          text: "Sorry, the system is currently busy. Please try again in a few moments.",
-          sender: "bot",
-        },
-      ]);
+      errorResponse(error);
     } finally {
       setIsWaitingBot(false);
     }
@@ -175,7 +176,7 @@ export default function ChatBot() {
               </div>
             )}
           </div>
-          <form onSubmit={sendMessage}>
+          <div>
             {/* 文件上傳按鈕，設計為正方形並添加迴紋針圖案 */}
             <div className="flex items-center">
               <label
@@ -211,7 +212,7 @@ export default function ChatBot() {
             />
             <div className="flex justify-between items-center mt-2">
               <button
-                type="submit"
+                onClick={sendMessage}
                 disabled={isWaitingBot}
                 className="text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
               >
@@ -225,7 +226,7 @@ export default function ChatBot() {
                 Start New Chat
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </section>
     </Layout>
