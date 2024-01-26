@@ -2,6 +2,7 @@
 import Head from "next/head";
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/layout";
+import { set } from "date-fns";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -210,7 +211,7 @@ export default function ChatBot() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !isWaitingBot) {
                   e.preventDefault(); // 阻止 Enter 鍵的默認行為（如換行）
-                  sendMessage();
+                  sendMessage(e);
                 }
               }}
               placeholder="Type your message here..."
