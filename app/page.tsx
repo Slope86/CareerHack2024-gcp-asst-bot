@@ -18,16 +18,16 @@ export default function Page() {
         "Navigate and manage your GCP resources with ease using our Bot Assistant, ready to provide real-time insights and optimizations.",
     },
     {
-      page_path: "/pages/stress-test",
-      title: "Simulate High-Load Scenarios",
-      description:
-        "Perform stress tests on your Cloud Run service with customizable concurrent requests.",
-    },
-    {
       page_path: "/pages/system_metric",
       title: "Fetch System Metrics",
       description:
         "Quickly access and analyze detailed system metrics from GCP with our integrated Monitoring API.",
+    },
+    {
+      page_path: "/pages/stress-test",
+      title: "Simulate High-Load Scenarios",
+      description:
+        "Perform stress tests on your Cloud Run service with customizable concurrent requests.",
     },
   ];
 
